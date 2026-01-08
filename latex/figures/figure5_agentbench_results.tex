@@ -1,0 +1,74 @@
+\definecolor{gpt4color}{RGB}{169,169,169}
+\definecolor{autogencolor}{RGB}{135,206,235}
+\definecolor{metagptcolor}{RGB}{144,238,144}
+\definecolor{halocolor}{RGB}{255,182,193}
+\definecolor{orchestracolor}{RGB}{255,218,185}
+\definecolor{amorecolor}{RGB}{68,114,196}
+
+\begin{tikzpicture}
+	\begin{axis}[
+		ybar,
+		bar width=8pt,
+		width=16cm,
+		height=10cm,
+		xlabel={\textbf{Environment}},
+		ylabel={\textbf{Success Rate (\%)}},
+		symbolic x coords={OS, DB, KG, Games, LTP, House, WebShop, WebBrowse, Average},
+		xtick=data,
+		x tick label style={rotate=45, anchor=east, font=\sffamily\small},
+		ymin=0,
+		ymax=85,
+		ytick={0,10,20,30,40,50,60,70,80},
+		legend style={
+			at={(0.5,-0.25)},
+			anchor=north,
+			legend columns=3,
+			font=\sffamily\small,
+			/tikz/every even column/.append style={column sep=0.3cm}
+		},
+		legend cell align={left},
+		ylabel style={font=\sffamily\bfseries},
+		xlabel style={font=\sffamily\bfseries},
+		tick label style={font=\sffamily},
+		enlarge x limits=0.08,
+		grid=major,
+		grid style={dashed, gray!30},
+%		title={\sffamily\bfseries\large AgentBench Results: Success Rate by Environment},
+		title style={yshift=8pt},
+		every axis plot/.append style={line width=0.8pt}
+		]
+		% GPT-4 + ReAct
+		\addplot[fill=gpt4color, draw=gpt4color!80!black] coordinates {
+			(OS, 42.4) (DB, 35.1) (KG, 48.2) (Games, 51.3) (LTP, 29.7) (House, 45.8) (WebShop, 62.4) (WebBrowse, 41.2) (Average, 44.5)
+		};
+		% AutoGen
+		\addplot[fill=autogencolor, draw=autogencolor!80!black] coordinates {
+			(OS, 45.2) (DB, 38.4) (KG, 51.0) (Games, 54.1) (LTP, 32.5) (House, 48.3) (WebShop, 65.1) (WebBrowse, 44.8) (Average, 47.4)
+		};
+		% MetaGPT
+		\addplot[fill=metagptcolor, draw=metagptcolor!80!black] coordinates {
+			(OS, 48.7) (DB, 41.2) (KG, 53.4) (Games, 56.8) (LTP, 35.8) (House, 51.2) (WebShop, 67.8) (WebBrowse, 47.5) (Average, 50.3)
+		};
+		% HALO
+		\addplot[fill=halocolor, draw=halocolor!80!black] coordinates {
+			(OS, 51.3) (DB, 44.5) (KG, 55.7) (Games, 58.2) (LTP, 38.1) (House, 53.7) (WebShop, 69.4) (WebBrowse, 50.1) (Average, 52.6)
+		};
+		% AgentOrchestra
+		\addplot[fill=orchestracolor, draw=orchestracolor!80!black] coordinates {
+			(OS, 52.8) (DB, 45.9) (KG, 56.3) (Games, 59.5) (LTP, 39.4) (House, 54.9) (WebShop, 70.2) (WebBrowse, 51.8) (Average, 53.9)
+		};
+		% AMORE (Ours) - highlighted
+		\addplot[fill=amorecolor, draw=amorecolor!60!black, line width=1.5pt, postaction={pattern=north east lines, pattern color=white}] coordinates {
+			(OS, 58.4) (DB, 52.3) (KG, 61.8) (Games, 65.1) (LTP, 45.7) (House, 60.2) (WebShop, 75.8) (WebBrowse, 58.4) (Average, 59.7)
+		};
+		\legend{GPT-4 + ReAct, AutoGen, MetaGPT, HALO, AgentOrchestra, \textbf{AMORE (Ours)}}
+	\end{axis}
+	% Add improvement annotation for Average
+	\draw[->, line width=1.5pt, color=red!70!black] (13.2,5.8) -- (13.2,7.2);
+	\node[font=\sffamily\footnotesize\bfseries, color=red!70!black, anchor=west] at (13.4,6.5) {+34.7\%};
+	\node[font=\sffamily\tiny, color=gray, anchor=west] at (13.4,6.1) {vs. single-agent};
+	% Add improvement vs best baseline
+	\draw[->, line width=1pt, color=blue!70!black] (12.8,6.7) -- (12.8,7.2);
+	\node[font=\sffamily\footnotesize\bfseries, color=blue!70!black, anchor=east] at (12.6,7) {+10.8\%};
+	\node[font=\sffamily\tiny, color=gray, anchor=east] at (12.6,6.6) {vs. best baseline};
+\end{tikzpicture}

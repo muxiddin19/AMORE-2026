@@ -1,0 +1,54 @@
+% ============================================
+% PART B: Quantitative Comparison (Bottom)
+% ============================================
+\begin{tikzpicture}[scale=0.6, transform shape]
+	\begin{axis}[
+		ybar,
+		width=14cm,
+		height=5cm,
+		bar width=0.4cm,
+		ylabel={Relative Cost (\%)},
+		ylabel style={font=\small},
+		xlabel={Multi-Agent Pattern},
+		xlabel style={font=\small},
+		symbolic x coords={Single, Parallel, Hierarchical, Consensus},
+		xtick=data,
+		xticklabel style={font=\small},
+		yticklabel style={font=\small},
+		ymin=0,
+		ymax=120,
+		legend style={
+			at={(0.5,-0.25)},
+			anchor=north,
+			legend columns=4,
+			font=\small,
+			/tikz/every even column/.append style={column sep=0.5cm}
+		},
+		legend cell align={left},
+		nodes near coords,
+		nodes near coords style={font=\tiny, above},
+		every node near coord/.append style={rotate=0},
+		grid=major,
+		grid style={dashed, gray!30},
+		]
+		
+		\addplot[fill=red!60, draw=red!80!black] coordinates {
+			(Single, 100) (Parallel, 100) (Hierarchical, 100) (Consensus, 100)
+		};
+		
+		\addplot[fill=green!60, draw=green!80!black] coordinates {
+			(Single, 45) (Parallel, 35) (Hierarchical, 40) (Consensus, 30)
+		};
+		
+		\addplot[fill=blue!60, draw=blue!80!black] coordinates {
+			(Single, 100) (Parallel, 65) (Hierarchical, 55) (Consensus, 50)
+		};
+		
+		\addplot[fill=purple!60, draw=purple!80!black] coordinates {
+			(Single, 45) (Parallel, 25) (Hierarchical, 28) (Consensus, 22)
+		};
+		
+		\legend{Text-based MAS, LatentMAS, AMORE (Ours), AMORE + Latent (Projected)}
+		
+	\end{axis}
+\end{tikzpicture}

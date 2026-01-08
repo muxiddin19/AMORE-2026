@@ -25,14 +25,33 @@ We introduce **AMORE** (Adaptive Multi-agent Orchestration with Reflective Execu
 
 **Cost Reduction**: 41% lower than AgentOrchestra through adaptive pattern selection.
 
+## Recent Updates (January 2026)
+
+**Revision addressing reviewer feedback:**
+- Added comparisons with xRouter, DAAO, MoMA via proxy implementations
+- Added first-run performance analysis ($f_{history}$ disabled)
+- Added CAR sensitivity to label set size (100-800 samples)
+- Added complete AMORE+LatentMAS integration results
+- Added backbone model robustness analysis (GPT-4, Claude, Llama, Mixtral)
+- Added UMA safety guarantees with empirical validation
+- Clarified hybrid quality estimator specification (z_o, H(z), α, β)
+
 ## Repository Structure
 
 ```
 AMORE/
+├── latex/
+│   ├── icml2026.tex              # Main paper source
+│   ├── icml2026.sty              # ICML 2026 style file
+│   ├── reviewer_response.tex     # Response to reviewer comments
+│   ├── example_paper.bib         # Bibliography
+│   └── figures/                  # TikZ figure sources
+│
 ├── experiments/
 │   ├── amore_simulation.py       # Core AMORE simulation framework
-│   ├── run_experiments.py        # Generate all paper tables
-│   └── additional_experiments.py # Extended ablations and analysis
+│   ├── run_experiments.py        # Generate all paper tables (incl. reviewer-requested)
+│   ├── additional_experiments.py # Extended ablations and analysis
+│   └── learned_quality_estimator.py # Quality estimation module
 │
 ├── benchmark/
 │   └── mars_specification.json   # MARS benchmark spec (2,847 tasks)
@@ -69,6 +88,13 @@ python run_experiments.py
 This generates:
 - Tables 8-14 from the main paper
 - Tables C1-C2 from the appendix
+- **NEW** Reviewer-requested tables:
+  - Adaptive orchestrator comparison (xRouter, DAAO, MoMA)
+  - CAR label sensitivity (100-800 samples)
+  - First-run performance (f_history disabled)
+  - AMORE+LatentMAS integration
+  - Backbone model robustness
+  - UMA safety metrics
 - `simulation_results.csv` with detailed results
 - `paper_tables.json` for programmatic access
 

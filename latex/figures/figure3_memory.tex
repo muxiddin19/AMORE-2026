@@ -1,0 +1,165 @@
+\definecolor{workingblue}{RGB}{70,130,180}
+\definecolor{episodicgreen}{RGB}{60,179,113}
+\definecolor{semanticpurple}{RGB}{147,112,219}
+\definecolor{agentcolor}{RGB}{255,165,0}
+
+\begin{tikzpicture}[
+	tier/.style={
+		rectangle,
+		rounded corners=5pt,
+		draw=#1!80!black,
+		fill=#1!15,
+		line width=1.5pt,
+		minimum width=14cm,
+		drop shadow={shadow xshift=1pt, shadow yshift=-1pt, opacity=0.2}
+	},
+	agentbox/.style={
+		rectangle,
+		rounded corners=3pt,
+		draw=agentcolor!80!black,
+		fill=agentcolor!20,
+		minimum width=2.5cm,
+		minimum height=2cm,
+		font=\sffamily\small
+	},
+	memoryitem/.style={
+		rectangle,
+		rounded corners=2pt,
+		draw=darkgray!50,
+		fill=white,
+		minimum width=3.5cm,
+		minimum height=1.5cm,
+		font=\sffamily\footnotesize
+	},
+	arrow/.style={
+		->,
+		>=stealth,
+		line width=1.2pt,
+		color=darkgray
+	},
+	syncarrow/.style={
+		->,
+		>=stealth,
+		line width=1pt,
+		color=#1,
+		dashed
+	},
+	tierlabel/.style={
+		font=\sffamily\bfseries\large,
+		color=#1!80!black
+	},
+	sublabel/.style={
+		font=\sffamily\footnotesize,
+		color=darkgray
+	}
+	]
+	
+	% Main title
+	%\node[font=\sffamily\Large\bfseries, color=darkgray] at (0,9) {Unified Memory Architecture (UMA)};
+	
+	% === WORKING MEMORY TIER ===
+	\node[tier=workingblue, minimum height=3cm] (working) at (0,6.5) {};
+	\node[tierlabel=workingblue, anchor=west] at (-6.5,7.7) {WORKING MEMORY ($M_W$)};
+	\node[sublabel, anchor=west] at (-6.5,7.3) {Per-Agent, Immediate Access, Limited Capacity (~100K tokens)};
+	
+	% Agent boxes in working memory
+	\node[agentbox] (agent1) at (-4.5,5.8) {};
+	\node[font=\sffamily\bfseries\small] at (-4.5,6.4) {Agent 1};
+	\node[font=\sffamily\tiny, text width=2cm, align=center] at (-4.5,5.6) {Context\\Goals\\Outputs};
+	
+	\node[agentbox] (agent2) at (-1.5,5.8) {};
+	\node[font=\sffamily\bfseries\small] at (-1.5,6.4) {Agent 2};
+	\node[font=\sffamily\tiny, text width=2cm, align=center] at (-1.5,5.6) {Context\\Goals\\Outputs};
+	
+	\node[agentbox] (agent3) at (1.5,5.8) {};
+	\node[font=\sffamily\bfseries\small] at (1.5,6.4) {Agent 3};
+	\node[font=\sffamily\tiny, text width=2cm, align=center] at (1.5,5.6) {Context\\Goals\\Outputs};
+	
+	\node[font=\sffamily\large] at (4,5.8) {...};
+	
+	\node[agentbox] (agentn) at (5.5,5.8) {};
+	\node[font=\sffamily\bfseries\small] at (5.5,6.4) {Agent N};
+	\node[font=\sffamily\tiny, text width=2cm, align=center] at (5.5,5.6) {Context\\Goals\\Outputs};
+	
+	% === EPISODIC MEMORY TIER ===
+	\node[tier=episodicgreen, minimum height=2.8cm] (episodic) at (0,3) {};
+	\node[tierlabel=episodicgreen, anchor=west] at (-6.5,4.1) {EPISODIC MEMORY ($M_E$)};
+	\node[sublabel, anchor=west] at (-6.5,3.7) {Session-Level, RAG Retrieval, ~10M entries};
+	
+	% Memory items in episodic
+	\node[memoryitem] (traces) at (-4,2.5) {};
+	\node[font=\sffamily\footnotesize\bfseries] at (-4,3) {Execution Traces};
+	\node[font=\sffamily\tiny, text width=3cm, align=center] at (-4,2.3) {trace\_001: \{...\}\\trace\_002: \{...\}};
+	
+	\node[memoryitem] (patterns) at (0,2.5) {};
+	\node[font=\sffamily\footnotesize\bfseries] at (0,3) {Success Patterns};
+	\node[font=\sffamily\tiny, text width=3cm, align=center] at (0,2.3) {pattern\_A: \{...\}\\pattern\_B: \{...\}};
+	
+	\node[memoryitem] (failures) at (4,2.5) {};
+	\node[font=\sffamily\footnotesize\bfseries] at (4,3) {Failure Cases};
+	\node[font=\sffamily\tiny, text width=3cm, align=center] at (4,2.3) {failure\_X: \{...\}\\failure\_Y: \{...\}};
+	
+	% === SEMANTIC MEMORY TIER ===
+	\node[tier=semanticpurple, minimum height=3.2cm] (semantic) at (0,-0.8) {};
+	\node[tierlabel=semanticpurple, anchor=west] at (-6.5,0.5) {SEMANTIC MEMORY ($M_S$)};
+	\node[sublabel, anchor=west] at (-6.5,0.1) {Permanent, Knowledge Graph + Embeddings, Unlimited};
+	
+	% Knowledge items in semantic
+	\node[memoryitem, minimum width=3cm] (domain) at (-4,-1.3) {};
+	\node[font=\sffamily\footnotesize\bfseries] at (-4,-0.8) {Domain Knowledge};
+	\node[font=\sffamily\tiny] at (-4,-1.5) {Facts, concepts, rules};
+	
+	\node[memoryitem, minimum width=3cm] (strategies) at (0,-1.3) {};
+	\node[font=\sffamily\footnotesize\bfseries] at (0,-0.8) {Learned Strategies};
+	\node[font=\sffamily\tiny] at (0,-1.5) {Effective approaches};
+	
+	\node[memoryitem, minimum width=3cm] (insights) at (4,-1.3) {};
+	\node[font=\sffamily\footnotesize\bfseries] at (4,-0.8) {Persistent Insights};
+	\node[font=\sffamily\tiny] at (4,-1.5) {Cross-session learning};
+	
+	% Knowledge graph visualization
+	\node[circle, draw=semanticpurple, fill=semanticpurple!30, minimum size=0.4cm] (n1) at (-2.5,-2.3) {};
+	\node[circle, draw=semanticpurple, fill=semanticpurple!30, minimum size=0.4cm] (n2) at (-1.5,-2.3) {};
+	\node[circle, draw=semanticpurple, fill=semanticpurple!30, minimum size=0.4cm] (n3) at (-2,-2.8) {};
+	\draw[-, semanticpurple, line width=0.8pt] (n1) -- (n2);
+	\draw[-, semanticpurple, line width=0.8pt] (n1) -- (n3);
+	\draw[-, semanticpurple, line width=0.8pt] (n2) -- (n3);
+	\node[font=\sffamily\tiny, color=semanticpurple] at (-2,-3.2) {Knowledge Graph};
+	
+	% Vector space visualization
+	\node[font=\sffamily\tiny, color=semanticpurple] at (2,-2.2) {$\vec{e}_1$};
+	\node[font=\sffamily\tiny, color=semanticpurple] at (2.5,-2.5) {$\vec{e}_2$};
+	\node[font=\sffamily\tiny, color=semanticpurple] at (1.8,-2.7) {$\vec{e}_3$};
+	\draw[->, semanticpurple, line width=0.5pt] (1.5,-2.5) -- (2,-2.2);
+	\draw[->, semanticpurple, line width=0.5pt] (1.5,-2.5) -- (2.5,-2.5);
+	\draw[->, semanticpurple, line width=0.5pt] (1.5,-2.5) -- (1.8,-2.7);
+	\node[font=\sffamily\tiny, color=semanticpurple] at (2,-3.2) {Embeddings};
+	
+	% === ARROWS BETWEEN TIERS ===
+	
+	% Sync arrows from agents to episodic
+	\draw[syncarrow=workingblue] (agent1.south) -- ++(0,-0.5) -- ++(-0.5,0) |- (traces.north west);
+	\draw[syncarrow=workingblue] (agent2.south) -- (patterns.north);
+	\draw[syncarrow=workingblue] (agent3.south) -- ++(0,-0.5) -- ++(1,0) |- (failures.north west);
+	
+	% Sync label
+	\node[font=\sffamily\footnotesize\bfseries, color=workingblue, rotate=90] at (-6.8,4.7) {Sync \& Share};
+	
+	% Consolidation arrow
+	\draw[arrow, line width=2pt, color=episodicgreen] (0,1.5) -- node[right, font=\sffamily\footnotesize, color=darkgray] {Consolidation} node[right, font=\sffamily\tiny, color=darkgray, yshift=-0.3cm] {(importance $> \tau$)} (0,0.6);
+	
+	% Retrieval arrows (going up)
+	\draw[arrow, line width=1pt, color=semanticpurple, dashed] (-5.5,-0.5) -- (-5.5,5);
+	\node[font=\sffamily\tiny, color=semanticpurple, rotate=90] at (-5.8,2.5) {Retrieval (RAG)};
+	
+	% Cross-agent sharing indicator
+	\draw[<->, line width=1pt, color=agentcolor, dashed] (agent1.east) -- (agent2.west);
+	\draw[<->, line width=1pt, color=agentcolor, dashed] (agent2.east) -- (agent3.west);
+	\node[font=\sffamily\tiny, color=agentcolor] at (-3,7.2) {Cross-agent sync};
+	
+	% Persistence labels on right
+	\node[font=\sffamily\footnotesize, color=workingblue, anchor=west] at (7,6.5) {Persistence: Subtask};
+	\node[font=\sffamily\footnotesize, color=episodicgreen, anchor=west] at (7,3) {Persistence: Session};
+	\node[font=\sffamily\footnotesize, color=semanticpurple, anchor=west] at (7,-0.8) {Persistence: Permanent};
+	
+\end{tikzpicture}

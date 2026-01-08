@@ -1,0 +1,59 @@
+\begin{tikzpicture}
+	\begin{axis}[
+		xbar,
+		bar width=18pt,
+		width=14cm,
+		height=10cm,
+		xlabel={\textbf{Success Rate (\%)}},
+		ylabel={},
+		xmin=40,
+		xmax=56,
+		ytick={1,2,3,4,5,6},
+		yticklabels={
+			{w/o Replanning},
+			{w/o Escalation},
+			{w/o UMA},
+			{w/o CAR},
+			{w/o RCM},
+			{\textbf{AMORE (Full)}}
+		},
+		y tick label style={font=\sffamily\small, anchor=east},
+		xlabel style={font=\sffamily\bfseries},
+		tick label style={font=\sffamily},
+		grid=major,
+		grid style={dashed, gray!30},
+		title style={yshift=8pt},
+		nodes near coords,
+		nodes near coords style={font=\sffamily\small\bfseries, anchor=west, xshift=3pt},
+		nodes near coords align={horizontal}
+		]
+		% Ablation results (ordered from bottom to top in the plot)
+		\addplot[fill=gray!40, draw=gray!60] coordinates {(50.8, 1)};   % w/o Replanning
+		\addplot[fill=gray!40, draw=gray!60] coordinates {(49.5, 2)};   % w/o Escalation
+		\addplot[fill=orange!50, draw=orange!70] coordinates {(48.1, 3)};  % w/o UMA
+		\addplot[fill=blue!40, draw=blue!60] coordinates {(47.8, 4)};    % w/o CAR
+		\addplot[fill=red!40, draw=red!60] coordinates {(44.2, 5)};      % w/o RCM
+		\addplot[fill=green!50, draw=green!70, postaction={pattern=north east lines, pattern color=white}] coordinates {(52.3, 6)};  % Full AMORE
+	\end{axis}
+	% Delta annotations
+	\node[font=\sffamily\footnotesize, color=red!70!black] at (5.8,7.8) {$\Delta$: -8.1};
+	\node[font=\sffamily\footnotesize, color=blue!70!black] at (6.5,6.4) {$\Delta$: -4.5};
+	\node[font=\sffamily\footnotesize, color=orange!70!black] at (7.0,5.0) {$\Delta$: -4.2};
+	\node[font=\sffamily\footnotesize, color=gray!70!black] at (8.2,3.6) {$\Delta$: -2.8};
+	\node[font=\sffamily\footnotesize, color=gray!70!black] at (9.0,2.2) {$\Delta$: -1.5};
+	% Component contribution box
+	\node[draw=black!50, fill=white, rounded corners=3pt, font=\sffamily\footnotesize, text width=5cm, align=left, anchor=north west] at (7.2,8) {
+		\textbf{Component Contributions:}\\[3pt]
+		\textcolor{red!70!black}{\textbullet\ RCM: +8.1\% (error recovery)}\\
+		\textcolor{blue!70!black}{\textbullet\ CAR: +4.5\% (smart routing)}\\
+		\textcolor{orange!70!black}{\textbullet\ UMA: +4.2\% (memory sharing)}\\
+		\textcolor{gray!70!black}{\textbullet\ Escalation: +2.8\%}\\
+		\textcolor{gray!70!black}{\textbullet\ Replanning: +1.5\%}
+	};
+	% Insight
+	\node[font=\sffamily\footnotesize\itshape, color=gray, text width=5cm, align=left, anchor=north west] at (7.8,5.0) {
+		\textit{RCM provides the largest gain,\\
+			validating the importance of\\
+			mid-execution error recovery.}
+	};
+\end{tikzpicture}
