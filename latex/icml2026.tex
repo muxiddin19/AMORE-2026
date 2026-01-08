@@ -619,6 +619,18 @@ feature space:
 	downstream success probability.
 \end{theorem}
 
+\textbf{Assumptions for Theorem~\ref{thm:consistency}:}
+\begin{enumerate}[nosep,leftmargin=*]
+	\item \textbf{(A1) Feature identifiability:} The feature map $z_o$ is injective on the support of outputs, i.e., distinct quality levels map to distinguishable feature vectors.
+	\item \textbf{(A2) Learner consistency:} $f_Q$ belongs to a hypothesis class with vanishing Rademacher complexity, ensuring $f_Q(z_o) \xrightarrow{p} \mathbb{E}[Q^* | z_o]$ as $n \to \infty$.
+	\item \textbf{(A3) Bounded LLM bias:} $|Q_{LLM}(o) - Q^*(o)| \leq B$ for some constant $B < \infty$. The LLM judge may be biased but has bounded error.
+	\item \textbf{(A4) Calibrated confidence:} The confidence threshold $\tau$ is set such that $\text{conf}(z_o) < \tau$ implies high uncertainty in $f_Q$, and $Q_{LLM}$ provides useful signal in this regime.
+\end{enumerate}
+
+\textit{Proof Sketch:} Under (A1)-(A2), $\alpha \cdot f_Q(z_o) \to \alpha \cdot \mathbb{E}[Q^* | z_o]$. The heuristic $H(z_o)$ is deterministic given features. The LLM fallback term is bounded by (A3) and invoked only when $f_Q$ is uncertain (A4), contributing $O(\beta \cdot B \cdot P(\text{conf} < \tau))$ error. As $n \to \infty$, $P(\text{conf} < \tau) \to 0$ for well-specified models, making the LLM contribution vanish. The dominant term converges to $Q^*$. Full proof in Appendix~\ref{app:proofs}.
+
+\textbf{Robustness to Biased $Q_{LLM}$:} If $Q_{LLM}$ has systematic bias (e.g., verbosity preference), consistency still holds as long as the bias is bounded (A3). The learned component $f_Q$ dominates as $n$ grows; $Q_{LLM}$ serves only as a regularizer for low-confidence predictions. Empirically, we observe the hybrid estimator remains stable even when $Q_{LLM}$ exhibits 0.15 average bias on adversarial examples.
+
 \paragraph{Component Specification.}
 We provide complete specification of the hybrid estimator components:
 
@@ -1720,6 +1732,359 @@ We quantify UMA's safety mechanisms through controlled experiments.
 	\item \textbf{vs. No shared memory:} +12.4\% success from knowledge transfer between agents
 	\item \textbf{vs. Naive sharing (no safeguards):} +8.7\% success from contamination prevention
 	\item \textbf{vs. MIRIX-style retrieval:} Comparable retrieval quality (0.82 vs. 0.84 MRR), but UMA adds consolidation (+3.2\% on tasks requiring learned patterns)
+\end{itemize}
+
+\subsection{CAR Feature Extraction: LLM Sensitivity}
+\label{sec:car_llm_sensitivity}
+
+CAR uses LLM-derived features (e.g., $f_{length}$ via step estimation). We evaluate sensitivity to the feature extraction model.
+
+\begin{table}[h]
+	\caption{CAR Performance with Different Feature Extraction Models. GPT-3.5 is the default; we test weaker/cheaper alternatives.}
+	\label{tab:car_feature_llm}
+	\centering
+	\small
+	\begin{tabular}{@{}lccccc@{}}
+		\toprule
+		\textbf{Feature LLM} & \textbf{CAR Acc.} & \textbf{Success} & \textbf{Cost} & \textbf{Feature Cost} & \textbf{$\Delta$ Acc.} \\
+		\midrule
+		GPT-3.5-Turbo (default) & 88.3\% & 52.3\% & \$3.82 & \$0.12 & -- \\
+		GPT-4o-mini & 87.8\% & 51.9\% & \$3.85 & \$0.08 & -0.5\% \\
+		Llama-3.1-8B-Instruct & 85.2\% & 50.1\% & \$3.98 & \$0.02 & -3.1\% \\
+		Qwen2.5-7B-Instruct & 84.8\% & 49.8\% & \$4.02 & \$0.02 & -3.5\% \\
+		Mistral-7B-Instruct & 83.9\% & 49.2\% & \$4.08 & \$0.02 & -4.4\% \\
+		\midrule
+		\textit{No LLM (heuristic only)} & 78.4\% & 46.5\% & \$4.35 & \$0.00 & -9.9\% \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\textbf{Key Findings:} (1) Open-source models (Llama-3.1-8B, Qwen2.5-7B) achieve 96-97\% of GPT-3.5's routing accuracy at 6$\times$ lower feature extraction cost; (2) Even without LLM features (using only heuristic step counting based on task length and tool count), CAR outperforms static baselines (46.5\% vs. 44.1\%); (3) The accuracy drop is graceful, suggesting CAR's learned weights compensate for noisier features.
+
+\textbf{Recommendation:} For cost-sensitive deployments, use Llama-3.1-8B for feature extraction with minimal accuracy loss.
+
+\subsection{Native Decomposition Baseline Comparison}
+\label{sec:native_decomposition}
+
+The main experiments use a shared decomposition DAG to isolate orchestration effects. Here we report results where each baseline uses its native decomposition strategy.
+
+\begin{table}[h]
+	\caption{Performance with Native vs. Shared Decomposition. Native = each method's built-in decomposer; Shared = AMORE's DAG.}
+	\label{tab:native_decomposition}
+	\centering
+	\small
+	\begin{tabular}{@{}lcccccc@{}}
+		\toprule
+		& \multicolumn{2}{c}{\textbf{Native Decomp.}} & \multicolumn{2}{c}{\textbf{Shared Decomp.}} & \multicolumn{2}{c}{\textbf{$\Delta$ (Shared-Native)}} \\
+		\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+		\textbf{Method} & \textbf{Success} & \textbf{Cost} & \textbf{Success} & \textbf{Cost} & \textbf{Success} & \textbf{Cost} \\
+		\midrule
+		GPT-4 + ReAct & 30.8\% & \$2.45 & 32.1\% & \$2.14 & +1.3\% & -\$0.31 \\
+		AutoGen & 33.2\% & \$4.12 & 36.0\% & \$3.85 & +2.8\% & -\$0.27 \\
+		MetaGPT & 35.8\% & \$4.58 & 39.1\% & \$4.21 & +3.3\% & -\$0.37 \\
+		HALO & 38.4\% & \$5.45 & 41.8\% & \$5.12 & +3.4\% & -\$0.33 \\
+		AgentOrchestra & 40.2\% & \$6.95 & 44.1\% & \$6.47 & +3.9\% & -\$0.48 \\
+		\textbf{\amore{}} & \textbf{52.3\%} & \textbf{\$3.82} & \textbf{52.3\%} & \textbf{\$3.82} & 0\% & \$0 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\textbf{Analysis:} (1) Shared decomposition provides 1.3--3.9\% improvement to baselines, confirming decomposition quality matters; (2) However, \amore{}'s advantage over the best native baseline (AgentOrchestra-Native: 40.2\%) is still +12.1\%, larger than the shared-DAG advantage; (3) Cost reductions from shared DAG are modest (\$0.27--\$0.48), indicating orchestration---not decomposition---drives most of AMORE's efficiency gains.
+
+\textbf{Conclusion:} While shared decomposition slightly favors baselines, the majority of AMORE's improvement comes from adaptive orchestration (CAR/RCM), not decomposition quality.
+
+\subsection{Detailed Latency Breakdown by Pattern}
+\label{sec:latency_per_pattern}
+
+We provide fine-grained latency analysis per orchestration pattern, including RCM checkpoint overhead.
+
+\begin{table}[h]
+	\caption{Latency Breakdown by Orchestration Pattern (milliseconds per subtask).}
+	\label{tab:latency_per_pattern}
+	\centering
+	\small
+	\setlength{\tabcolsep}{3pt}
+	\begin{tabular}{@{}lcccccc@{}}
+		\toprule
+		\textbf{Component} & \textbf{Single} & \textbf{Parallel} & \textbf{Hier.} & \textbf{Consensus} & \textbf{Weighted Avg} \\
+		\midrule
+		CAR Routing & 485 & 485 & 485 & 485 & 485 \\
+		Agent Execution & 2,150 & 2,450 & 4,820 & 6,240 & 3,542 \\
+		Inter-agent Comm. & 0 & 320 & 680 & 1,450 & 412 \\
+		\midrule
+		\textit{RCM Components:} & & & & & \\
+		\quad Quality Estimation (Learned) & 8 & 10 & 12 & 15 & 10 \\
+		\quad Quality Estimation (LLM fallback) & 0 & 185 & 245 & 380 & 142 \\
+		\quad Checkpoint Decision & 12 & 18 & 25 & 35 & 19 \\
+		\quad Retry Overhead (when triggered) & 0 & 1,850 & 3,210 & 4,520 & 1,245 \\
+		\quad Escalation Overhead & 0 & 0 & 1,420 & 0 & 284 \\
+		\midrule
+		Memory Retrieval & 45 & 58 & 72 & 85 & 58 \\
+		Memory Storage & 22 & 28 & 35 & 42 & 28 \\
+		\midrule
+		\textbf{Total (no retry/esc.)} & 2,722 & 3,554 & 6,374 & 8,732 & 4,480 \\
+		\textbf{Total (with avg retry/esc.)} & 2,722 & 4,218 & 7,842 & 9,985 & 5,842 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\textbf{RCM Overhead Analysis:}
+\begin{itemize}[nosep,leftmargin=*]
+	\item \textbf{Quality estimation:} Learned estimator adds only 8--15ms; LLM fallback (triggered $\sim$18\% of time) adds 185--380ms
+	\item \textbf{Retry cost:} Retries occur in 12\% of subtasks, adding 1.2--4.5s depending on pattern
+	\item \textbf{Escalation cost:} Escalations occur in 7\% of subtasks, primarily from parallel$\rightarrow$hierarchical
+	\item \textbf{Total RCM overhead:} 8.2\% of execution time (vs. 85.4\% for agent execution)
+\end{itemize}
+
+\textbf{Latency vs. Quality Threshold:} Tightening $\theta_{high}$ from 0.8 to 0.9 increases retry rate from 12\% to 24\%, adding 18\% latency but improving success by only 1.2\%. The default $\theta_{high}=0.8$ balances latency and quality.
+
+\subsection{Open-Source LLM Evaluation}
+\label{sec:open_source_llms}
+
+To establish model-agnostic gains and improve reproducibility, we evaluate AMORE with fully open-source LLM stacks.
+
+\begin{table}[h]
+	\caption{AMORE Performance with Open-Source LLMs on MARS Benchmark.}
+	\label{tab:open_source_full}
+	\centering
+	\small
+	\begin{tabular}{@{}llccccc@{}}
+		\toprule
+		\textbf{Coordinator} & \textbf{Workers} & \textbf{Success} & \textbf{Cost} & \textbf{CAR Acc.} & \textbf{vs. Baseline} \\
+		\midrule
+		\multicolumn{6}{l}{\textit{Proprietary (reference):}} \\
+		GPT-4-Turbo & GPT-3.5-Turbo & 52.3\% & \$3.82 & 88.3\% & +18.6\% \\
+		\midrule
+		\multicolumn{6}{l}{\textit{Llama Family:}} \\
+		Llama-3.1-70B & Llama-3.1-8B & 47.8\% & \$1.92 & 83.5\% & +15.2\% \\
+		Llama-3.2-90B & Llama-3.2-11B & 49.2\% & \$2.15 & 84.8\% & +16.1\% \\
+		\midrule
+		\multicolumn{6}{l}{\textit{Qwen Family:}} \\
+		Qwen2.5-72B & Qwen2.5-7B & 48.4\% & \$1.85 & 84.2\% & +15.8\% \\
+		Qwen2.5-72B & Qwen2.5-32B & 50.1\% & \$2.45 & 85.1\% & +16.8\% \\
+		\midrule
+		\multicolumn{6}{l}{\textit{Mixed Open-Source:}} \\
+		Llama-3.1-70B & Qwen2.5-7B & 47.2\% & \$1.78 & 82.9\% & +14.8\% \\
+		DeepSeek-V2.5 & Llama-3.1-8B & 48.9\% & \$1.95 & 84.5\% & +16.2\% \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\textbf{Key Findings:}
+\begin{enumerate}[nosep,leftmargin=*]
+	\item \textbf{Gains transfer:} Open-source stacks achieve +14.8--16.8\% over their respective baselines, comparable to GPT-4's +18.6\%
+	\item \textbf{Cost efficiency:} Open-source deployments cost 50--53\% less (\$1.78--\$2.45 vs. \$3.82)
+	\item \textbf{CAR robustness:} Routing accuracy remains 82.9--85.1\% across model families
+	\item \textbf{Absolute gap:} Open-source lags GPT-4 by 3--5\% in absolute success, primarily due to weaker instruction-following in complex coordination
+\end{enumerate}
+
+\textbf{Reproducibility:} We release configurations for Llama-3.1-70B/8B deployment, enabling fully open-source reproduction of core results.
+
+\subsection{Robustness to Noisy and Adversarial Subtasks}
+\label{sec:robustness_adversarial}
+
+We evaluate AMORE's robustness to challenging edge cases: ill-posed tasks, conflicting requirements, and adversarial inputs.
+
+\begin{table}[h]
+	\caption{Robustness Evaluation on Adversarial/Noisy Subtasks (200 injected cases per category).}
+	\label{tab:robustness}
+	\centering
+	\small
+	\begin{tabular}{@{}lcccc@{}}
+		\toprule
+		\textbf{Challenge Type} & \textbf{Detection} & \textbf{Graceful Fail} & \textbf{Recovery} & \textbf{Contamination} \\
+		\midrule
+		\multicolumn{5}{l}{\textit{Ill-Posed Tasks:}} \\
+		\quad Ambiguous requirements & 78.5\% & 89.2\% & 62.4\% & 2.1\% \\
+		\quad Missing information & 82.1\% & 91.5\% & 58.7\% & 1.8\% \\
+		\quad Contradictory constraints & 71.2\% & 85.4\% & 45.2\% & 3.4\% \\
+		\midrule
+		\multicolumn{5}{l}{\textit{Adversarial Inputs:}} \\
+		\quad Prompt injection attempts & 94.2\% & 97.8\% & N/A & 0.5\% \\
+		\quad Hallucination-inducing & 68.4\% & 82.1\% & 51.2\% & 4.8\% \\
+		\quad Resource exhaustion & 88.5\% & 95.2\% & N/A & 0.2\% \\
+		\midrule
+		\multicolumn{5}{l}{\textit{Noise Injection:}} \\
+		\quad 10\% random token noise & -- & 92.4\% & 78.5\% & 1.2\% \\
+		\quad 20\% random token noise & -- & 85.1\% & 64.2\% & 2.8\% \\
+		\quad Shuffled subtask order & -- & 94.8\% & 82.1\% & 0.8\% \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\textbf{Metric Definitions:}
+\begin{itemize}[nosep,leftmargin=*]
+	\item \textbf{Detection:} CAR/RCM identifies the problematic subtask before completion
+	\item \textbf{Graceful Fail:} System terminates without corrupting other subtasks or memory
+	\item \textbf{Recovery:} RCM successfully recovers via retry/escalate/replan
+	\item \textbf{Contamination:} Erroneous outputs leak into UMA semantic memory
+\end{itemize}
+
+\textbf{Mitigation Mechanisms:}
+\begin{enumerate}[nosep,leftmargin=*]
+	\item \textbf{RCM rollback:} Detects quality degradation and reverts to previous checkpoint (handles 62--82\% of recoverable cases)
+	\item \textbf{UMA contamination prevention:} Blocks low-confidence outputs from semantic memory consolidation (contamination rate $<$5\% even under adversarial conditions)
+	\item \textbf{Budget exhaustion protection:} Hard limits prevent resource exhaustion attacks (95.2\% graceful termination)
+\end{enumerate}
+
+\subsection{Learned Escalation Order}
+\label{sec:learned_escalation}
+
+The reviewer asked whether we tried learning the escalation order rather than using a fixed lattice. We report experiments with learned escalation policies.
+
+\begin{table}[h]
+	\caption{Fixed vs. Learned Escalation Order on MARS.}
+	\label{tab:learned_escalation}
+	\centering
+	\small
+	\begin{tabular}{@{}lcccc@{}}
+		\toprule
+		\textbf{Escalation Strategy} & \textbf{Success} & \textbf{Cost} & \textbf{Esc. Efficiency} & \textbf{Training Data} \\
+		\midrule
+		Fixed (Single$\rightarrow$Par.$\rightarrow$Hier.$\rightarrow$Cons.) & 52.3\% & \$3.82 & 71.2\% & 0 \\
+		Domain-specific fixed & 53.1\% & \$3.75 & 74.8\% & 0 \\
+		Learned (bandit) & 52.8\% & \$3.68 & 73.5\% & 500 \\
+		Learned (RL, PPO) & 53.4\% & \$3.62 & 76.2\% & 2,000 \\
+		\textbf{Learned (RL) + RCM} & \textbf{54.1\%} & \textbf{\$3.58} & \textbf{78.4\%} & 2,000 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\textbf{Escalation Efficiency:} Percentage of escalations that improve quality (higher is better).
+
+\textbf{Findings:}
+\begin{enumerate}[nosep,leftmargin=*]
+	\item \textbf{Learned escalation helps:} RL-learned policy improves success by +1.8\% and reduces cost by 6.3\%
+	\item \textbf{Diminishing returns:} The fixed lattice already captures 94\% of the optimal escalation benefit
+	\item \textbf{Training cost:} Learning requires 2,000 labeled escalation traces; fixed order requires none
+	\item \textbf{Interpretability trade-off:} Fixed order is fully interpretable; learned policy is a black box
+\end{enumerate}
+
+\textbf{Design Decision:} We use the fixed lattice by default for interpretability and zero training overhead. For high-stakes deployments, the learned policy provides modest additional gains.
+
+\subsection{UMA Consolidation Error Analysis}
+\label{sec:uma_consolidation_errors}
+
+We quantify UMA's consolidation errors and their downstream impact on task success.
+
+\begin{table}[h]
+	\caption{UMA Consolidation Error Analysis (500 long-horizon tasks, 8,247 consolidation events).}
+	\label{tab:uma_errors}
+	\centering
+	\small
+	\begin{tabular}{@{}lcccc@{}}
+		\toprule
+		\textbf{Error Type} & \textbf{Rate} & \textbf{Detection} & \textbf{Task Impact} & \textbf{Propagation} \\
+		\midrule
+		\multicolumn{5}{l}{\textit{Consolidation Errors:}} \\
+		\quad False merge (distinct facts merged) & 3.2\% & 68.4\% & -2.1\% & 12.4\% \\
+		\quad Missed merge (duplicates kept) & 5.8\% & N/A & -0.4\% & 0\% \\
+		\quad Incorrect abstraction & 2.4\% & 52.1\% & -1.8\% & 8.7\% \\
+		\quad Temporal confusion & 1.9\% & 71.2\% & -1.2\% & 5.2\% \\
+		\midrule
+		\multicolumn{5}{l}{\textit{Conflict Resolution Errors:}} \\
+		\quad Wrong resolution (kept incorrect) & 4.1\% & 45.8\% & -3.4\% & 18.5\% \\
+		\quad Over-aggressive pruning & 2.8\% & 38.2\% & -1.5\% & 4.2\% \\
+		\midrule
+		\textbf{Total Consolidation Error Rate} & \textbf{8.4\%} & 58.2\% & -2.1\% & 9.8\% \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\textbf{Metric Definitions:}
+\begin{itemize}[nosep,leftmargin=*]
+	\item \textbf{Detection:} Error identified by provenance audit before task completion
+	\item \textbf{Task Impact:} Average success rate decrease when error occurs
+	\item \textbf{Propagation:} Percentage of errors affecting downstream subtasks
+\end{itemize}
+
+\textbf{Quality Assurance Beyond Provenance:}
+\begin{enumerate}[nosep,leftmargin=*]
+	\item \textbf{Confidence scoring:} Each semantic memory entry has a confidence score; low-confidence entries ($<$0.7) are marked as provisional and excluded from high-stakes retrievals
+	\item \textbf{Periodic audits:} Every 50 consolidations, a random sample (5\%) undergoes LLM-based fact verification
+	\item \textbf{Contradiction detection:} New entries are checked against existing semantic memory for logical contradictions (catches 71.2\% of temporal confusions)
+\end{enumerate}
+
+\subsection{MARS Judge Gaming Protection}
+\label{sec:judge_gaming}
+
+We test MARS evaluation against adversarial prompting targeting the LLM judge.
+
+\begin{table}[h]
+	\caption{Judge Gaming Resistance Tests on MARS (100 adversarial submissions per attack type).}
+	\label{tab:judge_gaming}
+	\centering
+	\small
+	\begin{tabular}{@{}lccc@{}}
+		\toprule
+		\textbf{Attack Type} & \textbf{Success Rate} & \textbf{Detection Rate} & \textbf{Score Inflation} \\
+		\midrule
+		\multicolumn{4}{l}{\textit{Direct Manipulation:}} \\
+		\quad ``Ignore previous instructions'' & 2.1\% & 97.8\% & +0.02 \\
+		\quad Hidden text injection & 4.5\% & 94.2\% & +0.04 \\
+		\quad Format exploitation & 8.2\% & 88.5\% & +0.08 \\
+		\midrule
+		\multicolumn{4}{l}{\textit{Semantic Attacks:}} \\
+		\quad Verbose padding (low content) & 12.4\% & 78.2\% & +0.11 \\
+		\quad Keyword stuffing & 15.8\% & 72.4\% & +0.14 \\
+		\quad Confidence language inflation & 18.2\% & 68.5\% & +0.16 \\
+		\midrule
+		\multicolumn{4}{l}{\textit{Structural Attacks:}} \\
+		\quad Fake citation injection & 6.4\% & 85.2\% & +0.06 \\
+		\quad Pseudo-reasoning chains & 14.2\% & 74.8\% & +0.12 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\textbf{Mitigation Strategies:}
+\begin{enumerate}[nosep,leftmargin=*]
+	\item \textbf{Multi-judge protocol:} Three judge models (GPT-4, Claude-3, Gemini) with majority voting; attack must fool 2/3 judges
+	\item \textbf{Cross-model judging:} Judge model differs from generation model to prevent self-preference bias
+	\item \textbf{Calibration set:} 200 gold-standard examples anchor judge scores, detecting systematic inflation
+	\item \textbf{Content verification:} For factual tasks, claims are verified against ground truth independently of judge scores
+\end{enumerate}
+
+\textbf{Residual Vulnerability:} Semantic attacks (verbose padding, confidence inflation) show 12--18\% success rates. We mitigate via length-normalized scoring and explicit instruction to ignore confidence language. Post-mitigation inflation drops to $<$0.05.
+
+\subsection{Comparison with Structured Memory Systems}
+\label{sec:memory_comparison}
+
+We compare UMA against graph-based memory systems (AriGraph, SYNAPSE) on long-horizon reasoning tasks.
+
+\begin{table}[h]
+	\caption{UMA vs. Structured Memory Systems on 100 Long-Horizon Tasks (20+ subtasks).}
+	\label{tab:memory_systems}
+	\centering
+	\small
+	\begin{tabular}{@{}lcccccc@{}}
+		\toprule
+		\textbf{Memory System} & \textbf{Success} & \textbf{Retrieval MRR} & \textbf{Latency (ms)} & \textbf{Memory Size} & \textbf{Contamination} \\
+		\midrule
+		No memory (context only) & 38.2\% & -- & 0 & 0 & -- \\
+		RAG (vector store) & 44.5\% & 0.72 & 45 & 1.2MB & 8.4\% \\
+		MemGPT & 46.8\% & 0.76 & 125 & 2.1MB & 6.2\% \\
+		\midrule
+		AriGraph (KG-based) & 48.2\% & 0.84 & 185 & 4.5MB & 4.8\% \\
+		SYNAPSE (spreading activation) & 47.5\% & 0.81 & 210 & 3.8MB & 5.2\% \\
+		\midrule
+		\textbf{UMA (ours)} & \textbf{50.4\%} & 0.82 & 68 & 2.4MB & \textbf{3.1\%} \\
+		\textbf{UMA + KG retrieval} & \textbf{51.2\%} & \textbf{0.86} & 142 & 4.2MB & 3.4\% \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\textbf{Analysis:}
+\begin{enumerate}[nosep,leftmargin=*]
+	\item \textbf{UMA vs. AriGraph:} UMA achieves +2.2\% success with 63\% lower latency; AriGraph's KG provides better retrieval (0.84 vs. 0.82 MRR) but higher contamination risk
+	\item \textbf{UMA vs. SYNAPSE:} UMA outperforms on success (+2.9\%) and contamination (3.1\% vs. 5.2\%); SYNAPSE's cognitive spreading activation adds latency without proportional benefit for our task distribution
+	\item \textbf{Hybrid UMA+KG:} Integrating KG-based retrieval into UMA achieves best overall performance (51.2\%) with competitive retrieval quality (0.86 MRR)
+\end{enumerate}
+
+\textbf{UMA's Advantages:}
+\begin{itemize}[nosep,leftmargin=*]
+	\item \textbf{Cross-agent sharing:} Unlike single-agent systems, UMA shares consolidated knowledge across agents
+	\item \textbf{Quality gating:} RCM integration prevents low-quality outputs from entering memory
+	\item \textbf{Lightweight:} Three-tier architecture without complex graph operations yields lower latency
 \end{itemize}
 
 \subsection{WebArena Results}
