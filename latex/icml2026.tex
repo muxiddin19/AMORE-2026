@@ -267,87 +267,13 @@ We propose \textbf{\amore{}} (Adaptive Multi-agent Orchestration with Reflective
 \section{Related Work}
 \label{sec:related}
 
-\subsection{LLM-Based Agents}
-\label{sec:related_agents}
+\textbf{LLM-Based Agents.} Modern agent systems build on ReAct \citep{yao2023react}, with extensions including Chain-of-Thought prompting \citep{wei2022cot}, Tree-of-Thoughts \citep{yao2024tot}, and tool use \citep{schick2023toolformer,qin2024toolbench}. Memory systems like MemGPT \citep{packer2023memgpt} and Larimar \citep{das2024larimar} enable long-term context management.
 
-The foundation of modern agent systems rests on the ReAct framework \citep{yao2023react}, which interleaves reasoning traces with actions to enable LLMs to interact with external environments. Subsequent work has expanded agent capabilities in several directions.
+\textbf{Multi-Agent Systems.} AutoGen \citep{wu2023autogen}, MetaGPT \citep{hong2024metagpt}, and CAMEL \citep{li2023camel} enable collaborative agents. Hierarchical approaches include HALO \citep{chen2025halo} and AgentOrchestra \citep{liu2025agentorchestra}. Communication protocols (A2A \citep{google2025a2a}, MCP \citep{anthropic2024mcp}) standardize inter-agent interaction. LatentMAS \citep{zou2025latent} optimizes communication efficiency through latent-space collaboration.
 
-Chain-of-Thought (CoT) prompting \citep{wei2022cot} enables multi-step reasoning through explicit intermediate steps. Self-Consistency \citep{wang2023selfconsistency} improves reliability through ensemble voting over multiple reasoning paths. Tree-of-Thoughts \citep{yao2024tot} enables exploration of reasoning paths through search. Most recently, OpenAI's o1 \citep{openai2024o1} demonstrates test-time compute scaling via learned chain-of-thought, achieving remarkable results on mathematical reasoning benchmarks.
+\textbf{Adaptive Routing.} CARROT \citep{chen2024carrot} provides cost-aware model routing; xRouter \citep{li2024xrouter} and Puppeteer \citep{zhang2024puppeteer} use RL for orchestration; DAAO \citep{chen2024daao} learns difficulty-aware task routing. Unlike these, \amore{} (1) operates at subtask granularity, (2) provides mid-execution recourse via RCM, and (3) maintains cross-agent memory coherence. See Appendix for detailed comparisons.
 
-Toolformer \citep{schick2023toolformer} teaches LLMs to use APIs through self-supervised learning. Gorilla \citep{patil2023gorilla} specializes in API documentation understanding. ToolBench \citep{qin2024toolbench} provides comprehensive tool-use benchmarks spanning thousands of real-world APIs.
-
- MemGPT \citep{packer2023memgpt} implements virtual context management through hierarchical memory. Larimar \citep{das2024larimar} introduces episodic memory control for LLMs (ICML 2024). The comprehensive survey by \citet{zhang2025memory} categorizes memory mechanisms into related tiers.
-
-\subsection{Multi-Agent Systems}
-\label{sec:related_multiagent}
-Multi-agent LLM systems extend single-agent capabilities through collaboration patterns \citep{toshpulatov2024ddc3n}.
-
-AutoGen \citep{wu2023autogen} enables conversational multi-agent programming with flexible agent definitions. MetaGPT \citep{hong2024metagpt} encodes Standard Operating Procedures (SOPs) for software development teams (ICLR 2024). CAMEL \citep{li2023camel} explores role-playing for cooperative agents \citep{toshpulatov2025deep}.
-
-HALO \citep{chen2025halo} implements three-tier orchestration with high-level planners, mid-level coordinators, and low-level executors. AgentOrchestra \citep{liu2025agentorchestra} uses a conductor-specialist model with the TEA (Tool-Environment-Agent) protocol. MDAgents \citep{kim2024mdagents} adapts collaboration to medical task complexity \citep{toshpulatov2023talking}.
-
-The A2A Protocol \citep{google2025a2a} enables peer-to-peer agent communication with agent cards describing capabilities. MCP \citep{anthropic2024mcp} standardizes tool invocation across frameworks. ACP \citep{ibm2025acp} provides workflow orchestration primitives for enterprise deployment.
-
-%\textbf{Key Gap:} Existing methods focus on \textit{when} to decompose but not \textit{how} to orchestrate. \amore{} addresses this by jointly optimizing decomposition granularity and orchestration pattern selection.
-
-Existing methods focus on \textit{when} to decompose but not \textit{how} to orchestrate. Prior work either uses static patterns (MetaGPT, HALO) or makes orchestration decisions without feedback (ADaPT). \amore{} addresses this through:
-\begin{enumerate}[nosep,leftmargin=*]
-	\item \textbf{Principled integration} of complexity estimation, quality-gated execution, and unified memory
-	\item \textbf{Learned quality assessment} that reduces reliance on unstable LLM self-evaluation
-	\item \textbf{Mid-execution adaptation} through principled escalation hierarchy
-\end{enumerate}
-
-\paragraph{Adaptive Routing and Orchestration Methods.}
-Several recent works address related routing problems:
-
-\textbf{Cost-Aware Routing.} CARROT \citep{chen2024carrot} provides minimax-optimal cost-aware routing with plug-in estimators for model selection. While CARROT targets model routing with tight theoretical guarantees, CAR addresses the structurally richer orchestration pattern space with escalation recourse. We note CARROT's plug-in approach could complement CAR's learned classifier.
-
-\textbf{RL-Based Orchestrators.} Router-R1 and xRouter \citep{wang2024routerr1,li2024xrouter} treat routing as sequential decision-making with cost-aware rewards. Puppeteer \citep{zhang2024puppeteer} learns a centralized orchestrator that evolves collaboration graphs through RL. These approaches learn end-to-end policies, whereas \amore{} uses supervised routing with explicit escalation lattice, offering better interpretability and sample efficiency at the cost of flexibility.
-
-\textbf{Context and Memory Routing.} RCR-Router \citep{liu2024rcrrouter} implements role- and stage-aware token budget routing for context management. This complements UMA: RCR focuses on intra-turn context selection while \amore{} addresses inter-agent pattern selection with shared memory.
-
-\textbf{Difficulty-Aware Methods.} DAAO \citep{chen2024daao} learns difficulty profiles for task-level routing. MoMA \citep{liu2024moma} routes across heterogeneous models based on capability profiles. A2FM \citep{zhang2024a2fm} unifies single-agent, tool-augmented, and retrieval modes under cost-sensitive RL.
-
-\textbf{Key Differences:} Unlike these approaches, \amore{} (1) operates at subtask granularity within complex tasks, (2) provides recourse via RCM escalation when initial routing fails, (3) maintains cross-agent memory coherence via UMA, and (4) jointly optimizes routing with mid-execution adaptation rather than one-shot decisions. We position \amore{} as complementary to RL-based orchestrators: our supervised approach with explicit escalation is preferable when interpretability and sample efficiency matter, while RL methods may achieve better asymptotic performance with sufficient data.
-While individual components have precedents, their joint optimization for adaptive orchestration is novel. We provide the first empirical evidence that orchestration pattern selection significantly impacts multi-agent performance (Table~\ref{tab:mars_results}, see also Figure~\ref{fig:framework6} in Appendix).
-
-\textbf{Empirical Comparison Challenges.} Direct empirical comparison with xRouter, DAAO, MoMA, and Puppeteer is limited by: (1) no public implementations for xRouter and Puppeteer at submission time; (2) DAAO targets task-level (not subtask-level) routing with different granularity; (3) MoMA focuses on model capability routing rather than orchestration patterns. To provide indicative comparisons, we: (a) implement a proxy RL-based router using PPO with xRouter's cost-aware reward formulation, and (b) adapt DAAO's difficulty estimation for our pattern selection task. Results in Table~\ref{tab:adaptive_comparison} (Appendix) show \amore{}'s supervised approach with escalation recourse achieves comparable success rates with 3$\times$ fewer training samples, validating our sample efficiency claims. We commit to integrating official implementations when released.
-
-%\paragraph{Latent-Space Collaboration.}
-~\citet{zou2025latent} proposed LatentMAS, which moves
-agent collaboration from token space into the model's latent space. Rather than
-exchanging textual reasoning traces, agents communicate through latent representations,
-achieving 50--80\% token reduction and 3--7$\times$ wall-clock speedup without training.
-While LatentMAS optimizes \emph{how} agents communicate, AMORE addresses \emph{when}
-and \emph{which pattern} of collaboration is optimal---these approaches are complementary
-and could be integrated for both efficient communication and adaptive orchestration ( Table \ref{tab:extended_comparison}).
-
-	%\begin{figure*}[t]
-%	\centering
-%	\input{figures/bar_chart_standalone}
-%	\caption{Communication efficiency comparison across multi-agent approaches. bar chart standalone}
-%	\label{fig:framework6_bar}
-%\end{figure*}
-
-%\begin{figure*}[t]
-%	\centering
-%	\input{figures/communication_efficiency_standalone}
-%	\caption{communication efficiency.}
-%	\label{fig:framework_6_}
-%\end{figure*}
-\subsection{Task Decomposition and Planning}
-\label{sec:related_planning}
-\input{figures/comparison_table1}
-Effective task decomposition is critical for multi-agent success. HuggingGPT \citep{shen2023hugginggpt} plans and delegates to specialized models. ADaPT \citep{prasad2024adapt} decomposes as-needed based on LLM capability (NAACL 2024), achieving 28.3\% improvement on ALFWorld. TDAG \citep{zhang2025tdag} dynamically generates task-specific subagents with an evolving skill library.
-
-The survey by \citet{huang2024understanding} provides the first systematic view of LLM-based agent planning, categorizing approaches into task decomposition, plan selection, external modules, reflection, and memory \citep{toshpulatov2022human}.
-
-\subsection{Agent Evaluation}
-\label{sec:related_evaluation}
-
-Rigorous evaluation requires comprehensive benchmarks. AgentBench \citep{liu2024agentbench} evaluates across 8 environments with 29 models (ICLR 2024). WebArena \citep{zhou2024webarena} provides realistic web task automation. OSWorld \citep{xie2024osworld} benchmarks multimodal agents in real OS environments. SWE-bench \citep{jimenez2024swebench} focuses on software engineering tasks from real GitHub issues.
-
-Our \mars{} benchmark extends these with explicit multi-agent coordination metrics including orchestration accuracy, adaptation rate, and memory utilization (see Figure~\ref{fig:framework7} in Appendix).
+\textbf{Evaluation.} AgentBench \citep{liu2024agentbench}, WebArena \citep{zhou2024webarena}, and SWE-bench \citep{jimenez2024swebench} evaluate agent capabilities. Our \mars{} benchmark adds orchestration-specific metrics (Table~\ref{tab:orchestration_comparison} in Appendix).
 
 % ==============================================================================
 % EXTENDED RELATED WORK FOR AMORE PAPER
@@ -842,29 +768,13 @@ We provide theoretical analysis establishing convergence and sample complexity g
 
 \section{\mars{} Benchmark}
 \label{sec:benchmark}
-Existing benchmarks focus on single-agent capabilities or static multi-agent configurations. We introduce \mars{} to evaluate adaptive orchestration.
+Existing benchmarks focus on single-agent capabilities or static multi-agent configurations. We introduce \mars{} (2,847 tasks) to evaluate adaptive orchestration across Scientific Research (847), Software Engineering (1,124), and Strategic Planning (876) domains.
 
-%\subsection{Design Principles}
-\paragraph{Principles.}
-
-\mars{} is designed around three principles:
-\begin{enumerate}[nosep,leftmargin=*]
-	\item Tasks span a wide range of complexity levels requiring different orchestration patterns
-	\item Optimal strategy varies within and across tasks
-	\item  Tasks mirror real-world professional workflows
-\end{enumerate}
-
-%\subsection{Task Categories}
-\paragraph{Task Categories.}
-
-Table~\ref{tab:mars_stats} summarizes the benchmark statistics.
-Scientific Research tasks include literature reviews, methodology analysis, and research gap identification. Software Engineering tasks include bug localization, code review, and test generation. Strategic Planning includes market analysis, policy evaluation, and decision synthesis.
 \begin{table}[t]
 	\caption{\mars{} Benchmark Statistics}
 	\label{tab:mars_stats}
 	\centering
 	\small
-%		\setlength{\tabcolsep}{2.4pt}
 	\begin{tabular}{@{}lcccc@{}}
 		\toprule
 		\textbf{Category} & \textbf{Tasks} & \textbf{Avg. Subtasks} & \textbf{Complexity} \\
@@ -878,47 +788,9 @@ Scientific Research tasks include literature reviews, methodology analysis, and 
 	\end{tabular}
 \end{table}
 
-\textbf{Evaluation Metrics.}
-Beyond task success, \mars{} evaluates orchestration quality:
-\begin{itemize}[nosep,leftmargin=*]
-	\item  Fraction of completed tasks
-	\item Optimal patterns selected / total subtasks
-	\item  Successful adaptations / adaptation attempts
-	\item Retrieved memories used / retrieved memories
-	\item Success rate / API cost
-\end{itemize}
+\textbf{Metrics.} Beyond task success, \mars{} evaluates orchestration accuracy (optimal patterns selected), adaptation rate (successful adaptations), memory utilization, and cost efficiency.
 
-\textbf{Evaluation Protocol for Subjective Tasks.}
-Tasks with subjective outputs (e.g., research gap identification, strategic recommendations) pose evaluation challenges. We employ a multi-layered protocol:
-
-\begin{enumerate}[nosep,leftmargin=*]
-	\item \textbf{Rubric-Based Scoring:} Domain experts created detailed rubrics for each task type. For example, ``research gap identification'' is scored on: (a) novelty of identified gap (0-3), (b) supporting evidence quality (0-3), (c) actionability (0-2), (d) logical coherence (0-2). Scores are normalized to [0,1].
-
-	\item \textbf{Multi-Judge Evaluation:} Each subjective output is evaluated by 3 judges: two domain-expert humans and one LLM judge (GPT-4 with calibrated prompts). We report the mean score across judges.
-
-	\item \textbf{Judge Calibration:} LLM judges are calibrated against 50 human-labeled examples per task type, achieving $r > 0.85$ correlation. We monitor for drift via held-out calibration checks.
-
-	\item \textbf{Circularity Mitigation:} To avoid systems gaming LLM judges, we: (a) use a different model family for judging than execution (Claude-3 for judging when GPT-4 executes), (b) randomly substitute 20\% of judgments with human evaluation, and (c) track judge-system agreement rates for anomaly detection.
-\end{enumerate}
-
-Inter-annotator agreement for pattern labeling achieved Cohen's $\kappa$ = 0.78; for subjective task scoring, Krippendorff's $\alpha$ = 0.74 (see Appendix \ref{sub:ann} for annotation details).
-
-\textbf{External Validation and Bias Safeguards.}
-As \mars{} is introduced in this paper, we implement several safeguards against author bias:
-
-\begin{enumerate}[nosep,leftmargin=*]
-	\item \textbf{Independent Annotation:} Pattern labels were annotated by 5 domain experts not involved in framework development. Annotators received task descriptions and decompositions but no information about \amore{} or its design. Inter-annotator agreement ($\kappa = 0.78$) validates label quality.
-
-	\item \textbf{Baseline Replication:} All baseline methods (AutoGPT, MetaGPT, AgentVerse, etc.) were run using official implementations without modification. We report results from 3 independent runs with different random seeds.
-
-	\item \textbf{Cross-Benchmark Validation:} We validate our core claims on two established external benchmarks (AgentBench, WebArena) where \amore{} achieves consistent improvements (+12.8\% and +5.6\% respectively), demonstrating that gains are not \mars{}-specific.
-
-	\item \textbf{Public Leaderboard:} We will host a blind evaluation leaderboard where submitted systems are evaluated by independent evaluators on a held-out \mars{} test set (20\% of tasks, labels not released). This prevents overfitting to public annotations.
-
-	\item \textbf{Task Provenance:} All \mars{} tasks are derived from publicly available sources (arXiv papers, GitHub repositories, business case studies) with documented provenance. We release full task specifications to enable community auditing.
-\end{enumerate}
-
-We acknowledge that comprehensive external validation requires community adoption. We commit to incorporating third-party evaluations in future versions and welcome independent reproductions.
+\textbf{Evaluation Protocol.} Subjective tasks use multi-judge evaluation (2 human experts + 1 calibrated LLM judge, $r > 0.85$ correlation). Pattern labels were annotated by 5 independent domain experts (Cohen's $\kappa = 0.78$). Cross-model judging mitigates circularity. We validate on AgentBench/WebArena to demonstrate gains are not \mars{}-specific. Full protocol details in Appendix~\ref{sub:ann}.
 
 \section{Experiments}
 \label{sec:experiments}
