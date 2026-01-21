@@ -208,6 +208,96 @@
       "achieved": 0.78
     }
   },
+  "annotation_protocol": {
+    "description": "Three-phase annotation process for MARS benchmark tasks",
+    "annotators": {
+      "total": 15,
+      "per_category": 5,
+      "expertise": "Domain experts in scientific research, software engineering, and strategic planning"
+    },
+    "phase_1_task_creation": {
+      "name": "Task Creation",
+      "steps": [
+        "Domain experts created initial tasks based on real-world scenarios",
+        "Tasks were reviewed for clarity and completeness",
+        "Subtask decomposition was performed by experienced annotators"
+      ]
+    },
+    "phase_2_pattern_labeling": {
+      "name": "Pattern Labeling",
+      "steps": [
+        "Three annotators independently labeled optimal patterns for each subtask",
+        "Inter-annotator agreement measured: Cohen's kappa = 0.78",
+        "Disagreements resolved through discussion and empirical validation"
+      ],
+      "labeling_method": "Controlled exhaustive evaluation - all 4 patterns executed per subtask",
+      "budget_per_pattern": {
+        "single": "$1",
+        "parallel": "$2",
+        "hierarchical": "$4",
+        "consensus": "$7"
+      },
+      "runs_per_pattern": 3
+    },
+    "phase_3_validation": {
+      "name": "Validation",
+      "steps": [
+        "Subset (10%) executed with different patterns to validate labels",
+        "Ground truth answers verified by domain experts",
+        "Quality control: 5% of tasks randomly re-annotated monthly"
+      ]
+    },
+    "cross_model_validation": {
+      "models_used": ["GPT-4", "Claude-3", "Human judges"],
+      "correlation": "> 0.85"
+    },
+    "temporal_splits": {
+      "training_labels": "months 1-2",
+      "test_labels": "months 3-4",
+      "purpose": "Ensure no label leakage"
+    }
+  },
+  "error_propagation_protocol": {
+    "description": "Protocol for measuring error propagation reduction in multi-agent pipelines",
+    "definition": "Error propagation occurs when a low-quality subtask output causes downstream subtasks to fail",
+    "formula": "Propagation Rate = (# downstream failures caused by upstream errors) / (# total upstream errors)",
+    "measurement_steps": [
+      "Identify subtasks with quality score Q < theta_low (0.5) as 'upstream errors'",
+      "Track whether dependent subtasks in the DAG subsequently fail",
+      "A downstream failure is 'caused by' upstream error if: (a) it directly consumes the erroneous output, and (b) replacing the erroneous output with a corrected version leads to success"
+    ],
+    "validation_method": {
+      "sample_size": 100,
+      "correction_method": "Human annotation of corrected outputs",
+      "re_execution": "Downstream subtasks re-executed with corrected inputs"
+    },
+    "results": {
+      "sample_tasks": 500,
+      "upstream_errors_identified": 1247,
+      "static_pipeline": {
+        "upstream_errors": 412,
+        "downstream_failures": 348,
+        "propagation_rate": "84.5%"
+      },
+      "amore_with_rcm": {
+        "upstream_errors": 387,
+        "downstream_failures": 108,
+        "propagation_rate": "27.9%",
+        "reduction": "67.0%"
+      },
+      "breakdown_by_rcm_action": {
+        "retry_succeeded": {"errors": 142, "downstream_fails": 12, "rate": "8.5%"},
+        "escalate_succeeded": {"errors": 98, "downstream_fails": 24, "rate": "24.5%"},
+        "replan_succeeded": {"errors": 47, "downstream_fails": 18, "rate": "38.3%"},
+        "all_actions_failed": {"errors": 100, "downstream_fails": 54, "rate": "54.0%"}
+      }
+    },
+    "per_domain_reduction": {
+      "scientific_research": "71.2%",
+      "software_engineering": "64.8%",
+      "strategic_planning": "62.1%"
+    }
+  },
   "example_tasks": [
     {
       "id": "sci_research_001",

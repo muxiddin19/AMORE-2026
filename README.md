@@ -1,9 +1,10 @@
-# AMORE: Adaptive Multi-agent Orchestration with Reflective Execution
+# When Should Agents Collaborate? AMORE: Adaptive Multi-Agent Orchestration for Reasoning and Execution
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://python.org)
+[![ICML 2026](https://img.shields.io/badge/ICML-2026-red.svg)](https://icml.cc/)
 
-> **AMORE** is a novel framework for adaptive multi-agent orchestration that dynamically selects collaboration patterns based on task complexity and execution feedback.
+> **AMORE** (Adaptive Multi-agent Orchestration with Reflective Execution) is a novel framework for adaptive multi-agent orchestration that dynamically selects collaboration patterns based on task complexity and execution feedback.
 
 ## Abstract
 
@@ -167,7 +168,7 @@ Three-tier cognitive architecture:
 
 ```bibtex
 @inproceedings{anonymous2026amore,
-  title={AMORE: Adaptive Multi-agent Orchestration with Reflective Execution for Complex Reasoning Tasks},
+  title={When Should Agents Collaborate? AMORE: Adaptive Multi-Agent Orchestration for Reasoning and Execution},
   author={Anonymous},
   booktitle={International Conference on Machine Learning (ICML)},
   year={2026}
