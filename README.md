@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://python.org)
-[![ 2026](https://img.shields.io/badge/ICML-2026-red.svg)]
+
 
 > **AMORE** (Adaptive Multi-agent Orchestration with Reflective Execution) is a novel framework for adaptive multi-agent orchestration that dynamically selects collaboration patterns based on task complexity and execution feedback.
 
