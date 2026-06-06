@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://python.org)
-[![ICML 2026](https://img.shields.io/badge/ICML-2026-red.svg)](https://icml.cc/)
+[![ 2026](https://img.shields.io/badge/ICML-2026-red.svg)]
 
 > **AMORE** (Adaptive Multi-agent Orchestration with Reflective Execution) is a novel framework for adaptive multi-agent orchestration that dynamically selects collaboration patterns based on task complexity and execution feedback.
 
@@ -26,7 +26,7 @@ We introduce **AMORE** (Adaptive Multi-agent Orchestration with Reflective Execu
 
 **Cost Reduction**: 41% lower than AgentOrchestra through adaptive pattern selection.
 
-## Recent Updates (January 2026)
+## Recent Updates (May 2026)
 
 **Revision addressing reviewer feedback:**
 - Added comparisons with xRouter, DAAO, MoMA via proxy implementations
@@ -41,12 +41,6 @@ We introduce **AMORE** (Adaptive Multi-agent Orchestration with Reflective Execu
 
 ```
 AMORE/
-├── latex/
-│   ├── icml2026.tex              # Main paper source
-│   ├── icml2026.sty              # ICML 2026 style file
-│   ├── reviewer_response.tex     # Response to reviewer comments
-│   ├── example_paper.bib         # Bibliography
-│   └── figures/                  # TikZ figure sources
 │
 ├── experiments/
 │   ├── amore_simulation.py       # Core AMORE simulation framework
@@ -66,8 +60,8 @@ AMORE/
 
 ```bash
 # Clone the repository
-git clone https://github.com/muxiddin19/AMORE-ICML2026.git
-cd AMORE-ICML2026
+git clone https://github.com/muxiddin19/AMORE-2026.git
+cd AMORE-2026
 
 # Create virtual environment
 python -m venv venv
@@ -170,7 +164,7 @@ Three-tier cognitive architecture:
 @inproceedings{anonymous2026amore,
   title={When Should Agents Collaborate? AMORE: Adaptive Multi-Agent Orchestration for Reasoning and Execution},
   author={Anonymous},
-  booktitle={International Conference on Machine Learning (ICML)},
+  booktitle={XXX},
   year={2026}
 }
 ```
@@ -185,4 +179,4 @@ For questions about this research, please open an issue or contact the authors.
 
 ---
 
-**Note**: This repository contains the code for the ICML 2026 submission.
+**Note**: This repository contains the code for the XXX 2026 submission.
